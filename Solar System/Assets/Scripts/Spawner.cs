@@ -30,11 +30,12 @@ public class Spawner : MonoBehaviour
         // if time to spawn
         if (nextSpawn>spawnTime)
         {
-            // Spawn the gameObject at the spawners current position and rotation
-            GameObject projectileGameObject = Instantiate(spawnPrefab, transform.position, transform.rotation, null);
+			// Spawn the gameObject at the spawners current position and rotation
+			GameObject projectileGameObject = Instantiate(spawnPrefab, transform.position, transform.rotation, null);
+            projectileGameObject.transform.localEulerAngles += new Vector3(0.0f, Random.Range(-10.0f, 10.0f), 0.0f);
 
-            // reset the time until nextSpawn
-            nextSpawn = 0f;
+			// reset the time until nextSpawn
+			nextSpawn = 0f;
         }
 
     }
