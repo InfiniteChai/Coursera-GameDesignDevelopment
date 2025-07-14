@@ -8,7 +8,7 @@ using UnityEngine;
 public class Enemy : MonoBehaviour
 {
     [Header("Settings")]
-    [Tooltip("The speed at which the enemy moves.")]
+    [Tooltip("The speed at which the enemy moves")]
     public float moveSpeed = 5.0f;
     [Tooltip("The score value for defeating this enemy")]
     public int scoreValue = 5;
@@ -47,15 +47,21 @@ public class Enemy : MonoBehaviour
     //The direction that this enemy will try to scroll if it is set as a scrolling enemy.
     [SerializeField] private Vector3 scrollDirection = Vector3.right;
 
-    /// <summary>
-    /// Description:
-    /// Standard Unity function called after update every frame
-    /// Inputs: 
-    /// none
-    /// Returns:
-    /// void (no return)
-    /// </summary>
-    private void LateUpdate()
+
+    public float ActualMoveSpeed()
+    {
+        return moveSpeed * GameManager.instance.currentSpeed / 10f;
+    }
+
+	/// <summary>
+	/// Description:
+	/// Standard Unity function called after update every frame
+	/// Inputs: 
+	/// none
+	/// Returns:
+	/// void (no return)
+	/// </summary>
+	private void LateUpdate()
     {
         HandleBehaviour();       
     }
@@ -260,7 +266,7 @@ public class Enemy : MonoBehaviour
         if (followTarget != null && (followTarget.position - transform.position).magnitude < followRange)
         {
             Vector3 moveDirection = (followTarget.position - transform.position).normalized;
-            Vector3 movement = moveDirection * moveSpeed * Time.deltaTime;
+            Vector3 movement = moveDirection * ActualMoveSpeed() * Time.deltaTime;
             return movement;
         }
         return Vector3.zero;
@@ -298,7 +304,7 @@ public class Enemy : MonoBehaviour
     private Vector3 GetScrollingMovement()
     {
         scrollDirection = GetScrollDirection();
-        Vector3 movement = scrollDirection.normalized * moveSpeed * Time.deltaTime;
+        Vector3 movement = scrollDirection.normalized * ActualMoveSpeed() * Time.deltaTime;
         return movement;
     }
 

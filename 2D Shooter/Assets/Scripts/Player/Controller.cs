@@ -1,5 +1,7 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -24,10 +26,17 @@ public class Controller : MonoBehaviour
     [Tooltip("The input action(s) that map to where the controller looks")]
     public InputAction lookAction;
 
-    /// <summary>
-    /// Enum which stores different aiming modes
-    /// </summary>
-    public enum AimModes { AimTowardsMouse, AimForwards };
+    public GameObject[] guns;
+
+	public int currentGuns = 1;
+	public float currentFireRate = 0.1f;
+
+    private List<TimedPlayerBoost> boosts = new List<TimedPlayerBoost> ();
+
+	/// <summary>
+	/// Enum which stores different aiming modes
+	/// </summary>
+	public enum AimModes { AimTowardsMouse, AimForwards };
 
     [Tooltip("The aim mode in use by this player:\n" +
         "Aim Towards Mouse: Player rotates to face the mouse\n" +
@@ -46,9 +55,14 @@ public class Controller : MonoBehaviour
         "Astroids: Player moves forward/back in the direction they are facing and rotates with horizontal input")]
     public MovementModes movementMode = MovementModes.FreeRoam;
 
+	public float ActualMoveSpeed()
+	{
+		return moveSpeed * GameManager.instance.currentSpeed / 10f;
+	}
 
-    // Whether the player can aim with the mouse or not
-    private bool canAimWithMouse
+
+	// Whether the player can aim with the mouse or not
+	private bool canAimWithMouse
     {
         get
         {
@@ -105,6 +119,8 @@ public class Controller : MonoBehaviour
         {
             Debug.LogWarning("An Input Action does not have a binding set! Make sure that each Input Action has a binding set or the controller will not work!");
         }
+
+        UpdateBoosts();      
     }
 
     /// <summary>
@@ -118,8 +134,33 @@ public class Controller : MonoBehaviour
     void Update()
     {
         // Collect input and move the player accordingly
-        HandleInput();
+        UpdateBoosts();
+        HandleInput();       
     }
+
+    private void UpdateBoosts()
+    {
+        int gunCount = currentGuns;
+        float fireRate = currentFireRate;
+        foreach (var boost in boosts)
+        {
+            boost.timeLeft -= Time.deltaTime;
+            if (boost.timeLeft > 0)
+            {
+				gunCount = boost.boost.modifyGunCount(gunCount);
+                fireRate = boost.boost.modifyFireRate(fireRate);
+            }
+        }
+
+        boosts = boosts.Where(x => x.timeLeft > 0).ToList();
+
+		gunCount = Mathf.Min(gunCount, guns.Length);
+		for (int i = 0; i < guns.Length; i++)
+		{
+			guns[i].SetActive(i < gunCount);
+			guns[i].GetComponent<ShootingController>().fireRate = fireRate;
+		}
+	}
 
     /// <summary>
     /// Description:
@@ -198,7 +239,7 @@ public class Controller : MonoBehaviour
             }
 
             // Move the player using physics
-            Vector2 force = transform.up * movement.y * Time.deltaTime * moveSpeed;
+            Vector2 force = transform.up * movement.y * Time.deltaTime * ActualMoveSpeed();
             Debug.Log(force);
             myRigidbody.AddForce(force);
 
@@ -224,7 +265,7 @@ public class Controller : MonoBehaviour
                 movement.y = 0;
             }
             // Move the player's transform
-            transform.position = transform.position + (movement * Time.deltaTime * moveSpeed);
+            transform.position = transform.position + (movement * Time.deltaTime * ActualMoveSpeed());
         }
     }
 
@@ -257,4 +298,9 @@ public class Controller : MonoBehaviour
             }
         }
     }
+
+	internal void AddBoost(TimedPlayerBoost timedPlayerBoost)
+	{
+		this.boosts.Add(timedPlayerBoost);
+	}
 }

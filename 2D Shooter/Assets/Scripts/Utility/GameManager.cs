@@ -39,12 +39,22 @@ public class GameManager : MonoBehaviour
     // The highest score obtained by this player
     [Tooltip("The highest score acheived on this device")]
     public int highScore = 0;
+    
+	[Tooltip("The current speed of the game")]
+	public float currentSpeed = 10.0f;
+    public float speedIncrement = 0.2f;
 
-    [Header("Game Progress / Victory Settings")]
+    public GameObject[] boosts;
+    public float boostSpawnRate = 0.1f;
+
+    public int killsPerSpeedIncrement = 1;
+    private int currentKillsInSpeedIncrement = 0;
+   
+	[Header("Game Progress / Victory Settings")]
     [Tooltip("Whether the game is winnable or not \nDefault: true")]
     public bool gameIsWinnable = true;
     [Tooltip("The number of enemies that must be defeated to win the game")]
-    public int enemiesToDefeat = 10;
+    public int enemiesToDefeat = 10;    
     
     // The number of enemies defeated in game
     private int enemiesDefeated = 0;
@@ -184,18 +194,34 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Description:
-    /// Increments the number of enemies defeated by 1
-    /// Input:
-    /// none
-    /// Return:
-    /// void (no returned value)
-    /// </summary>
-    public void IncrementEnemiesDefeated()
+    public void PotentiallySpawnBoost(Vector3 enemyPosition)
     {
+		if (Random.Range(0f, 1f) < boostSpawnRate)
+		{
+			var boost = boosts[Random.Range(0, boosts.Length)];
+			Instantiate(boost, enemyPosition, transform.rotation, null);
+		}
+	}
+
+	/// <summary>
+	/// Description:
+	/// Increments the number of enemies defeated by 1
+	/// Input:
+	/// none
+	/// Return:
+	/// void (no returned value)
+	/// </summary>
+	public void IncrementEnemiesDefeated()
+    {        
         enemiesDefeated++;
-        if (enemiesDefeated >= enemiesToDefeat && gameIsWinnable)
+        currentKillsInSpeedIncrement++;
+        if (currentKillsInSpeedIncrement >= killsPerSpeedIncrement)
+        {
+            currentKillsInSpeedIncrement = 0;
+            currentSpeed += speedIncrement;
+        }
+
+		if (enemiesDefeated >= enemiesToDefeat && gameIsWinnable)
         {
             LevelCleared();
         }
