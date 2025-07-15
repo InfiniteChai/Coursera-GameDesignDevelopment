@@ -44,7 +44,7 @@ public class Health : MonoBehaviour
     /// </summary>
     void Start()
     {
-        SetRespawnPoint(transform.position);
+        SetRespawnPoint(transform.position, GetComponent<Rigidbody2D>().gravityScale < 0);
     }
 
     /// <summary>
@@ -107,6 +107,7 @@ public class Health : MonoBehaviour
 
     // The position that the health's gameobject will respawn at
     private Vector3 respawnPosition;
+    private bool respawnInverted;
 
     /// <summary>
     /// Description:
@@ -117,10 +118,12 @@ public class Health : MonoBehaviour
     /// void (no return)
     /// </summary>
     /// <param name="newRespawnPosition">The new position to respawn at</param>
-    public void SetRespawnPoint(Vector3 newRespawnPosition)
+    public void SetRespawnPoint(Vector3 newRespawnPosition, bool newRespawnInverted)
     {
         respawnPosition = newRespawnPosition;
-    }
+        respawnInverted = newRespawnInverted;
+
+	}
 
     /// <summary>
     /// Description:
@@ -133,7 +136,16 @@ public class Health : MonoBehaviour
     void Respawn()
     {
         transform.position = respawnPosition;
-        currentHealth = defaultHealth;
+        var rigidbody = GetComponent<Rigidbody2D>();
+        rigidbody.gravityScale = Mathf.Abs(rigidbody.gravityScale);
+        transform.SetLocalPositionAndRotation(respawnPosition, Quaternion.identity);
+        if (respawnInverted)
+        {
+            rigidbody.gravityScale *= -1;
+            transform.Rotate(new Vector3(0, 180, 180));
+
+		}
+		currentHealth = defaultHealth;
         GameManager.UpdateUIElements();
     }
 

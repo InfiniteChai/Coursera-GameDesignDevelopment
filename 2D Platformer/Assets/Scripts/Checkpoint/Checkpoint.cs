@@ -31,7 +31,7 @@ public class Checkpoint : MonoBehaviour
         if (collision.tag == "Player" && collision.gameObject.GetComponent<Health>() != null)
         {
             Health playerHealth = collision.gameObject.GetComponent<Health>();
-            playerHealth.SetRespawnPoint(respawnLocation.position);
+            playerHealth.SetRespawnPoint(respawnLocation.position, collision.gameObject.GetComponent<Rigidbody2D>().gravityScale < 0);
 
             // Reset the last checkpoint if it exists
             if (CheckpointTracker.currentCheckpoint != null)

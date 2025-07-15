@@ -7,11 +7,12 @@ using TMPro;
 /// <summary>
 /// This class handles displayig the score
 /// </summary>
-public class ScoreDisplay : UIelement
+public class GravityDisplay : UIelement
 {
     [Header("References")]
     [Tooltip("The text to use when displaying the score")]
     public TMP_Text displayText = null;
+    public Rigidbody2D player = null;
 
     /// <summary>
     /// Description:
@@ -21,11 +22,11 @@ public class ScoreDisplay : UIelement
     /// Return:
     /// void (no return)
     /// </summary>
-    public void DisplayScore()
+    public void DisplayGravity()
     {
         if (displayText != null)
-        {
-            displayText.SetText("Shards: " + GameManager.score.ToString());
+        {            
+            displayText.SetText("Gravity: " + (player.gravityScale < 0 ? "Inverted" : "Normal"));
         }
     }
 
@@ -42,7 +43,7 @@ public class ScoreDisplay : UIelement
         // This calls the base update UI function from the UIelement class
         base.UpdateUI();
 
-        // The remaining code is only called for this sub-class of UIelement and not others
-        DisplayScore();
+		// The remaining code is only called for this sub-class of UIelement and not others
+		DisplayGravity();
     }
 }
